@@ -1,7 +1,8 @@
-# Microbiome Bioinformatics Analysis Workshop
-#
+<h1 id="title">Microbiome Bioinformatics Analysis Workshop</h1>
 
+<p id="GI">
 <h2 id="general">General Information</h2>
+</p>
 
 <p id="by">
   <strong>Led by:</strong>
