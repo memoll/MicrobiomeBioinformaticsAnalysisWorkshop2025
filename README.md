@@ -140,7 +140,7 @@ Please install the following <a href="https://github.com/memoll/MicrobiomeBioinf
   - phyloseq
   - vegan
   - ggplot2
-  - tidyverse (or tidyr): <a href="https://datacarpentry.org/R-ecology-lesson/03-dplyr.html">Tutorial by Data Carpentry</a>
+  - tidyverse
   - dplyr 
   - BiocGenerics
   - SummarizedExperiment
@@ -156,4 +156,4 @@ Please install the following <a href="https://github.com/memoll/MicrobiomeBioinf
   - <a href="https://zenodo.org/records/14169026/files/silva_nr99_v138.2_toSpecies_trainset.fa.gz?download=1">silva_nr99_v138.2_toSpecies_trainset.fa.gz</a> 
 
 <h3 id="blast"><a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_SPEC=GeoBlast&PAGE_TYPE=BlastSearch">BLAST</a></h3>
-<a href="https://github.com/memoll/MicrobiomeBioinformaticsAnalysisWorkshop2023/blob/main/data/sequenceExample">Sequence Example</a>
+<a href="data/sequenceExample">Sequence Example</a>
