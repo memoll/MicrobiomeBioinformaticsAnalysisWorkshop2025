@@ -6,7 +6,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 # DADA2 to model the errors introduced during amplicon sequencing, and use that error model to infer the true sample composition (Callahan et al., 2016)
 BiocManager::install("dada2") 
 
-# phyloseq to store all sequencing-related data as single experiment-level object and simplify analyses (McMurdie & Holmes, 2013)
+# phyloseq to store all sequencing-related data as a single experiment-level object and simplify analyses (McMurdie & Holmes, 2013)
 BiocManager::install("phyloseq") 
 
 # vegan for ecological statistical functions (Oksanen et al., 2020)
@@ -24,13 +24,13 @@ install.packages("tidyr")
 # dyplr package for data manipulation (Wickham et al., 2014)
 install.packages("dyplr") 
 
-# BiocGenerics for variance stabilizing transformatiom (Huber et al., 2015)
+# BiocGenerics for variance stabilizing transformation (Huber et al., 2015)
 BiocManager::install("BiocGenerics") 
 
-# SummarizedExperiment for variance stabilizing transformatiom (Morgan et al., 2022)
+# SummarizedExperiment for variance stabilizing transformation (Morgan et al., 2022)
 BiocManager::install("SummarizedExperiment")
 
-# rstatix for pipe friendly statistical analysis (Kassambara, 2021)
+# rstatix for pipe-friendly statistical analysis (Kassambara, 2021)
 install.packages("rstatix")
 
 # DESeq2 for differential abundance analysis (Love et al., 2014)
