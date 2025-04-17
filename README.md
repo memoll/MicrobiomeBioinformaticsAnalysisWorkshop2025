@@ -133,24 +133,24 @@ Before attending the workshop, please go through the following course:
 Please install the following <a href="https://github.com/memoll/MicrobiomeBioinformaticsAnalysisWorkshop2025/blob/main/package_installation">R packages</a> in RStudio: 
 
 
-  - dada2
-  - phyloseq
-  - vegan
-  - ggplot2
-  - tidyverse
-  - dplyr 
-  - BiocGenerics
-  - SummarizedExperiment
-  - rstatix
-  - DESeq2  
-  - ggpubr
-  - RColorBrewer
-  - gridExtra
+ - dada2
+ - phyloseq
+ - vegan
+ - ggplot2
+ - tidyverse
+ - dplyr
+ - BiocGenerics
+ - SummarizedExperiment
+ - rstatix
+ - DESeq2
+ - ggpubr
+ - RColorBrewer
+ - gridExtra
  
 <h3 id="db">Download database for taxonomic assignment with DADA2</h3>
 
-  - <a href="https://zenodo.org/records/14169026/files/silva_nr99_v138.2_toGenus_trainset.fa.gz?download=1">silva_nr99_v138.2_toGenus_trainset.fa.gz</a>  
-  - <a href="https://zenodo.org/records/14169026/files/silva_nr99_v138.2_toSpecies_trainset.fa.gz?download=1">silva_nr99_v138.2_toSpecies_trainset.fa.gz</a> 
+ - <a href="https://zenodo.org/records/14169026/files/silva_nr99_v138.2_toGenus_trainset.fa.gz?download=1">silva_nr99_v138.2_toGenus_trainset.fa.gz</a>
+ - <a href="https://zenodo.org/records/14169026/files/silva_nr99_v138.2_toSpecies_trainset.fa.gz?download=1">silva_nr99_v138.2_toSpecies_trainset.fa.gz</a> 
 
 <h3 id="blast"><a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_SPEC=GeoBlast&PAGE_TYPE=BlastSearch">BLAST</a></h3>
 <a href="https://github.com/memoll/MicrobiomeBioinformaticsAnalysisWorkshop2025/blob/main/data/sequenceExample">Sequence Example</a>
