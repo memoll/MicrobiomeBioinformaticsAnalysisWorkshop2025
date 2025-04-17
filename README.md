@@ -73,7 +73,7 @@ This workshop covers the following material:
      
 <h2 id="setup">Setup</h2> 
 To participate in this Workshop, please install the following <a href="#r">software</a> 
-and <a href="#r-pkg">packages</a>, complete the <a href="#r-course">R courses for beginners</a>, 
+and <a href="#r-pkg">packages</a>, complete the <a href="#r-course">R course for beginners</a>, 
 and let us know if you need any help before attending.
 
 <div id="r">
@@ -128,7 +128,7 @@ and let us know if you need any help before attending.
    
 <h3 id="r-course">R for beginners</h3>
 To follow the workshop, you must have a basic understanding of R.
-Before attending the workshop, please go through the following courses:
+Before attending the workshop, please go through the following course:
 
   - <a href="http://swcarpentry.github.io/r-novice-inflammation/">Programming with R</a>
 
