@@ -134,7 +134,7 @@ Before attending the workshop, please go through the following course:
 
 
 <h3 id="r-pkg">Install R packages</h3>
-Please install the following <a href="https://github.com/memoll/MicrobiomeBioinformaticsAnalysisWorkshop2023/blob/main/PackageInstallation">R packages</a> in RStudio: 
+Please install the following <a href="https://github.com/memoll/MicrobiomeBioinformaticsAnalysisWorkshop2025/tree/main">R packages</a> in RStudio: 
 
   - dada2
   - phyloseq
