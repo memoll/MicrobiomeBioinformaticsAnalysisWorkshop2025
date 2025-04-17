@@ -1,0 +1,46 @@
+# Package installation ####
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager") # Installs BiocManager, a package that facilitates the download of packages from the BioConductor repository.
+
+# DADA2 to model the errors introduced during amplicon sequencing, and use that error model to infer the true sample composition (Callahan et al., 2016)
+BiocManager::install("dada2") 
+
+# phyloseq to store all sequencing-related data as single experiment-level object and simplify analyses (McMurdie & Holmes, 2013)
+BiocManager::install("phyloseq") 
+
+# vegan for ecological statistical functions (Oksanen et al., 2020)
+install.packages("vegan") 
+
+# ggplot2 for plotting (Wickham, 2016)
+install.packages("ggplot2") 
+
+# tidyverse for tidier coding (Wickham et al., 2019)
+install.packages("tidyverse") 
+
+# tidyr to create tidy data (Wickham et al., 2023)
+install.packages("tidyr")
+
+# dyplr package for data manipulation (Wickham et al., 2014)
+install.packages("dyplr") 
+
+# BiocGenerics for variance stabilizing transformatiom (Huber et al., 2015)
+BiocManager::install("BiocGenerics") 
+
+# SummarizedExperiment for variance stabilizing transformatiom (Morgan et al., 2022)
+BiocManager::install("SummarizedExperiment")
+
+# rstatix for pipe friendly statistical analysis (Kassambara, 2021)
+install.packages("rstatix")
+
+# DESeq2 for differential abundance analysis (Love et al., 2014)
+BiocManager::install("DESeq2") 
+
+# ggpubr for plotting statistics from rstatix (Kassambara, 2023) az
+install.packages("ggpubr") 
+
+# RColorBrewer for ggplot color palettes (Neuwirth, 2022)
+install.packages("RColorBrewer") 
+
+# gridExtra to arrange multiple grid-based plots (Chapman & Hall, 2005)
+install.packages("gridExtra")
