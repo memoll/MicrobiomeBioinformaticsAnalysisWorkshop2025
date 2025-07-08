@@ -1,67 +1,85 @@
 ###############################################################
+# Microbiome Bioinformatic Analysis                           #
 # Introduction to R                                           #
-# By: ArrietaLab - University of Calgary                      #
-# Author: Mona Parizadeh                                      # 
-# Dates: July 2025                                            #
-# Location: Argentina                                         #
+# Author: ArrietaLab - University of Calgary                  #
+# Date: July 2025                                             #
+# Location: IUCBC - Cordoba (Argentina)                       #
 ###############################################################
 
-#Create object "x"
-x <- 5
-x #you just assigned the value "5" to an object called "x"
+#Let's R                
 
+# The # symbol in R indicates "comments" and is NOT processed by R.
+# Why are comments important? They help others - and your future self - understand your code.
 
-#create additional objects
-#objects can be made up of alphanumeric characters, but can't start with a number. 
-#Object names are case sensitive.
+#enter to run the code
+output <- "Hello World!"
+output 
 
-y <- 2
-students <- 20
-A <- "Fiocruz"
+#brackets [] in front of the output show at which value of the output you are situated
+
+#Errors and Warnings ####
+#warning: Warns you about a potential issue in the input/output but still executes the function
+x <- c("2", -3, "end", 0, 4, 0.2)
+as.numeric(x)
+
+#error: Notifies you of a problem that must be fixed to proceed.
+x * 10
+
+#Google and ChatGPT are your best friends!
+
+#Object #### 
+#see slides
+y <- 7
 y
-#Print the values for the different objects created
+A <- "toto"
+a <- "foo"
+A
+a
 
-
-#Operations in R
-
-#There are numerous operators in R - arithmetic, logical tests, etc.
-#you have created objects x and y before
-#Now create an object that is the sum of them
-z <- x + y
+#Operators #### 
+#see slides
+#__Arithmetic Operators ####
+5+1
+10-2
+3*5
+18/3
+2^5
+2**5
+z <- 14/5
 z
+y + z
 
-#Or you can just use them directly for different operations 
-x*y # value if you multiply them
+#Now it's your turn
+2 + 20 * 31 - 11
+#pay attention to the order of operataions
+(2 + 20) * (31 - 11)
 
-#let's use some logic now
-x > y
+#built-in constant 
+pi 
+pi * 2^3
 
-#What about x and z?
+?Constants #in console
+month.name
 
+#__Logical Operators ####
+y > z
+y < z
+y + 5 > z
 
-#Functions
+#Functions ####
+#see slides
 
-# let's run the function "ls()"
-ls() #what this function does is to list all the objects and functions created in your environment
+ls
+?ls
+?median
+help(ls)
 
+ls()
+mean()
+mean(z)
 
-#let's explore the "help()" function
-# on its own, it displays documentation for itself...try it...
-help() 
-
-#You can also add the name of another function to explore what it does
-#let's get more details on the "ls()" function we just used
-help(ls)  # same as '?ls'
-
-#Let's explore other built-in functions
-mean(x, y, z)
-min(x, y, z)
-print(x + y + z)
-sum(x, y, z)
-
-
-#Let's create our own function
-MySequence <- seq(1, 100)
+?seq
+MySequence <- seq(1, 100, by=5)
 MySequence #print your new created sequence
 
 MyMean <- mean(MySequence)
@@ -69,161 +87,234 @@ MyMean
 
 SumMySequence <- sum(MySequence)
 SumMySequence
-print(sum(MySequence))
+
+print(SumMySequence)
 
 
-#vector objects
-#A vector is the simplest type of object in R.
-#it is an object that contains one or more values of the same type. Some common types of vector are:
+#Let's create some functions
+#see slides
+my_function <- function() { # create a function with the name my_function
+  print("Hello World!")
+}
+#What is the result of running the line below?
+my_function()
+#Good jab! You created a function (that does take any arguments)
 
-vec.a <- c(x, y, z)
-vec.a
+#Now try this one:
+fname_function <- function(fname) {
+  paste(fname, "Griffin")
+}
 
-#So now creating a new vector
-vec.b <- c("x", "y", "z")
-vec.b #is it the same? what is different?
+fname_function("Peter")
+fname_function("Lois")
+fname_function("Stewie")
+fname_function()
+#What does the fname_function do? Does it accept any arguments?
+#What happens if you run it empty?
 
-#Matrix objects
-#A matrix is a two-dimensional numerical array
-#let's create a matrix
-mat.a <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3)
-mat.a
+#Let's try another one:
+city_function <- function(city = "Tehran") {
+  paste("I am from", city)
+}
 
-#let's name the rows and columns of the new matrix
-rownames(mat.a) <- c("row1", "row2")
-mat.a
-colnames(mat.a) <- c("col1", "col2", "col3")
-mat.a
-
-#data.frame objects
-#It's an object, similar to a matrix, but its columns can be a mixture of different types of data. 
-# The data.frame is perhaps the most frequently used type of object for biodiversity analysis since it can contain many different types of data.
-
-df.a <- as.data.frame(mat.a)
-df.a$col4 <- c("foo", "bar")
-dim(df.a)
-## [1] 2 4
-df.a
-
-#List objects
-#A list is a collection of different types of objects. 
-#make a list combining the vector, matrix, and data.frame objects we just created
-list.a <- list(va = vec.a, vb = vec.b, ma = mat.a, dfa = df.a)
-names(list.a)
-list.a
+city_function("Shiraz")
+city_function("Mashhad")
+city_function() # will get the default value, which is Tehran
+city_function("Tabriz")
 
 
+#There are many functions built in to R.
+#We can also load sets of functions and data (called packages) to do different types of analysis. 
+#We'll talk about packages later.
 
-#Tidyverse
+#R tip: Use the 'Up' and 'Down' arrows in the console to navigate through previous commands.
 
-#Let's install this new package
-library(tidyverse) #note that tidyverse comes with several other packages attached to it
-help(tidyverse)
+#Types of data in R ####
+?typeof
+?class
 
+#__Numeric ####
+z
+class(z)
+typeof(z)
 
-#import global variation in the atopy and asthma file
+u <- 5.0; typeof(u)
+v <- 5; typeof(v)
+w <- 5L; typeof(w)
+
+#__Character ####
+typeof(toto)
+typeof("toto")
+
+c <- 5
+d <- "5"
+class(c)
+class(d)
+
+#__Logical ####
+typeof(y > z)
+class(y > z)
+
+#__Factor ####
+days <- factor(c("Saturday", "Monday", "Monday", "Friday", "Saturday"))
+days
+class(days)
+
+days[1]
+days[1:3]
+
+#Types of objects in R ####
+#see slides
+
+#__Vectors ####
+weekdays <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+weekdays 
+class(weekdays)
+is.vector(weekdays)
+
+weekdays[1]
+weekdays[1:3]
+
+names(weekdays) <- c("day1", "day2", "day3", "day4", "day5")
+weekdays
+weekdays[1:3]
+length(weekdays)
+dim(weekdays)
+
+#Matrix ####
+#numeric matrix
+mat <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3)
+mat
+
+rownames(mat) <- c("row1", "row2")
+colnames(mat) <- c("col1", "col2", "col3")
+mat
+mat[,2]
+mat[1,]
+mat[2,3]
+
+class(mat)
+is.matrix(mat)
+dim(mat)
+
+#character matrix
+animals <- matrix(c("cat", "dog", "duck", "dog", "cat", "cow"), nrow = 3, ncol = 2)
+animals
+
+rownames(animals) <- c("row1","row2","row3")
+colnames(animals) <- c("group1","group2")
+animals
+dim(animals)
+animals[3,2]
+
+#Dataframe ####
+df <- as.data.frame(mat)
+df
+df$col2
+
+df$col4 <- c("foo", "toto")
+dim(df)
+df$col4
+
+class(df)
+is.data.frame(df)
+
+# obtain a summary of each column of a data.frame
+summary(df)
+
+#List ####
+list <- list(foo = weekdays, matrix1 = mat, matrix2 = animals, dataframe = df)
+names(list)
+list
+list$matrix2
+
+class(list)
+is.list(list)
+
+#Manage your workspace ####
+# what is the current directory?
 getwd()
-atopyasthmavariation <- read.table("WorldwideVariationAtopy.tsv", header=TRUE, sep="\t", dec=".", strip.white=TRUE)
-atopyasthmavariation
-# read.table is a function to read a data table in 'tsv' format that we have in our workspace
-# part of the function is to tell if the table has a header (=TRUE)
-# sep indicates the field separator between characters
-# dec specifies the decimal points used in the file (it might be using ",")
-# strip.white required as we specified "sep" that will account for blank spaces between characters
 
+#save workspace image to a file in current directory
+save.image("day2_workspace.RData")
 
-# Let's explore the new imported data.frame
-colnames(atopyasthmavariation)
-dim(atopyasthmavariation)
+#delete all objects in the workspace
+rm(list = ls())
+ls()
 
+#load the workspace we just saved
+load("day2_workspace.RData")
+ls()
 
-# too much information,  what can we do?
-#Let's filter and sort the data:
+#Importing data ####
+mydata <- read.csv2("PATH_TO_FILE/FILE_NAME.csv", header=TRUE, sep=";", row.names = 1) #use column 1 as row names 
+mydata <- read.table("PATH_TO_FILE/FILE_NAME.tsv", header=TRUE, sep="\t") 
 
-AAvariationEurope <- filter(atopyasthmavariation, 
-                            Continent == "Europe")
-AAvariationEurope
-dim(AAvariationEurope)
-# you used the equal to sign "==" to select only the data you wanted
+#Exporting data ####
+write.csv2(mydata, "PATH_TO_FILE/FILE_NAME.csv")
 
-#What you want to do is the opposite? Instead of selecting just one, you want to exclude a continent
-AAvariationNoOceania <- filter(atopyasthmavariation, 
-                               Continent != "Oceania")
-AAvariationNoOceania
-dim(AAvariationNoOceania)
-# you used the differ to sign "!=" to select all  data but the one you dont want
+#R tip: Tab autocompletion
+#If you type part of an object or function name and hit tab, you'll see a list of objects with names matching that text.
+write_
 
-#Now we want to see the countries with the highest atopy incidence
-HighAtopy <- filter(atopyasthmavariation, 
-                    Atopy > 25) %>% 
-  arrange(Country)
-HighAtopy
-#You now selected only the countries with Atopy values higher than 25% of the sample population
-#Here we introduce a new language: the pipe operator in the form %>% aims to combine various functions without the need to assign the result to a new object. The pipe operator passes the output of a function applied to the first argument of the next function. 
-#Using the pipe operator, we applied the filter and the arrange function to the same object HighAtopy
+#Data Visualization ####
 
-#We can also group information 
-AApercontinent <- atopyasthmavariation %>% 
-  group_by(Continent) %>% 
-  summarise(mx = max(Asthma_Ever, na.rm = TRUE), 
-            min = min(Asthma_Ever, na.rm = TRUE),
-            median = median(Asthma_Ever))
+#load data
+data(iris) #built-in data
+#explore data
+dim(iris)
+class(iris)
+summary(iris)
+head(iris)
+colnames(iris)
 
-AApercontinent
-#Now we created an object AApercontinent, in which we grouped the Asthma_Ever incidence per continent
-#In addition, we summarized the data for max, minimum, and median values.
+#histogram: visualize distribution of a dataset
+hist(iris$Sepal.Width) #of of sepal width
 
+#boxplot of petal length by species
+boxplot(Petal.Length ~ Species, data = iris, xlab = "Species", ylab = "Petal length")
 
-#Now let's see the data!
+#what type of data (object) it takes?
+?boxplot #read the Arguments section
 
-#Let's start with some built-in tools
-hist(atopyasthmavariation$Asthma_Ever)
+#R Packages ####
+#see slides
 
-#What about atopy?
-hist(atopyasthmavariation$Atopy)
+#Install R packages from one of the following repositories####
 
-#now let's do more...
-#first install ggplot2
-library(ggplot2)
-#Check if it was properly installed
-#Also inspect ggplot2 to get more information about the package
+#__CRAN:
+install.packages("package-name", dependencies = TRUE)
 
-plot1 <- ggplot(atopyasthmavariation, aes(Asthma_Ever, Atopy, colour = Continent)) + 
-  geom_point()
-plot1
-#Here we are just plotting our data
-# asthma_ever vs. atopy, and color coded per continent
-#But we can't make much sense of it
+#__Bioconductor:
+install.packages("BiocManager")
+BiocManager::install("package-name")
 
+#__GitHub:
+install.packages("remotes")  
+remotes::install_github("author/package-name")
+#Or
+install.packages("devtools")  
+devtools::install_github("author/package-name")
 
-plot2 <- ggplot(atopyasthmavariation, aes(Asthma_Ever, Continent, colour = Continent)) + 
-  geom_point()
-plot2
-#Here we are now looking at asthma incidence per continent
+#Load the package once it is installed ####
+library(package-name)
 
-plot3 <- ggplot(atopyasthmavariation, aes(Asthma_Ever, Continent, colour = Continent)) + 
-  geom_boxplot()
-plot3
-#Here we have the same graph...but instead of geom_points, now we are using geom_boxplot
-# asthma_ever vs. atopy, and color coded per continent
+#Read the package's documentation ####
+help(package-name)
 
-#But as we mentioned with ggplot we can edit the graphs so they look however we want, we just keep adding layers to it...so let's explore
-plot4 <- ggplot(atopyasthmavariation, aes(Asthma_Ever, Continent, fill = Continent, colour = Continent)) + #adding fill, now we also colored the boxplots instead of just outlines
-  geom_boxplot(alpha=1) + #keeping the assigned boxplots for the graph
-  geom_jitter(width=0.2) + #but we also want to see the individual points, not just the bars
-  xlab("Asthma Incidence (%)") + #now we are renaming the x axis
-  scale_color_manual(name="Continent", values=c("black", "black", "black", "black", "black", "black", "black")) 
-plot4
+#Install the following R packages for the next session, using one of the above methods (whichever works for you):
 
-#Now let's do the same for atopy
-plot5 <- ggplot(atopyasthmavariation, aes(Atopy, Continent, fill = Continent, colour = Continent)) + 
-  geom_boxplot(alpha=1) +
-  geom_jitter(width=0.2) + 
-  xlab("Atopy Incidence (%)") + #here we need to manually change the axis name
-  scale_color_manual(name="Continent", values=c("black", "black", "black", "black", "black", "black", "black")) 
-plot5
+#dada2
+#phyloseq
+#vegan
+#ggplot2
+#tidyverse 
+#dplyr
+#BiocGenerics
+#SummarizedExperiment
+#rstatix
+#DESeq2
+#ggpubr
+#RColorBrewer
+#gridExtra
 
-#And another nice thing we can do is to combine graphs to generate a report
-#We need to install a new package, though
-library(gridExtra)
-grid.arrange(nrow = 2,  plot4, plot5)
