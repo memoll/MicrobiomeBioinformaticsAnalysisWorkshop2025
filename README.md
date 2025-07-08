@@ -1,4 +1,4 @@
-<h1 id="title">Microbiome Bioinformatics Analysis Workshop</h1>
+<h1 id="title">Bioinformatics Analysis of Microbial Communities</h1>
 
 <p id="GI">
 <h2 id="general">General Information</h2>
@@ -11,12 +11,12 @@
 
 <p id="loc">
   <strong>Location:</strong>
-  Argentina
+  Argentina (Online)
 </p>
 
 <p id="date">
   <strong>Dates:</strong>
-  July 2025
+  July 21-23, 2025
 </p>
 
 <p id="obj">
@@ -43,9 +43,16 @@
 <h2 id="content">Course Content</h2>  
 This course covers the following material:
 
+<h3 id="day1">Day 1</h3>
+<h4 id="day1h">(9 a.m. to 12 p.m. & 1 p.m. to 4 p.m.)</h4>
+
  - Introduction to metabarcoding and amplicon sequencing
  - Introduction to R
  - <a href="https://benjjneb.github.io/dada2/tutorial.html">DADA2 Tutorial</a>
+
+<h3 id="day2">Day 2</h3>
+<h4 id="day2h">(9 a.m. to 12 p.m. & 1 p.m. to 4 p.m.)</h4>
+
  - Introduction to phyloseq package in R
  - Data exploration
  - Statistical analyses of 16S rRNA gene sequences:
@@ -54,8 +61,15 @@ This course covers the following material:
    - Beta diversity (ordination)
    - PERmutational Multivariate ANalysis Of VAriance (PERMANOVA)
    - Differential analysis
+
+<h3 id="day2">Day 3</h3>
+<h4 id="day2h">(9 a.m. to 12 p.m.)</h4>
+
 - Discussion
   - Wrap up of the results of 16S rRNA gene sequence analysis
+  - Differences between DADA2 pipeline workflows in analyzing
+  <a href="https://benjjneb.github.io/dada2/tutorial.html">16S</a> vs 
+  <a href="https://benjjneb.github.io/dada2/ITS_workflow.html">ITS</a> sequences  
 
      
 <h2 id="setup">Setup</h2> 
