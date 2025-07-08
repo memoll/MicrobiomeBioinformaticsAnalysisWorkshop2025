@@ -11,7 +11,7 @@
 
 <p id="loc">
   <strong>Location:</strong>
-  Argentina (Online)
+  IUCBC Instituto Universitario de Ciencias Biomédicas de Córdoba - Argentina (Online)
 </p>
 
 <p id="date">
