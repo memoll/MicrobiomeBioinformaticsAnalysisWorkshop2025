@@ -1,30 +1,31 @@
 ###############################################################
-# Statistical analyses of 16S data                            #
+# Microbiome Bioinformatic Analysis                           #
+# Statistical analyses                                        #
+# 16S amplicon sequencing                                     #                                                          
 # Data: Mice - Antibiotic experience                          #
-# By: ArrietaLab - University of Calgary                      #
-# Author: Mona Parizadeh                                      # 
-# Dates: July 2025                                            #
-# Location: Argentina                                         #
+# Author: ArrietaLab - University of Calgary                  #
+# Date: July 2025                                             #
+# Location: IUCBC - Cordoba (Argentina)                       #
 ###############################################################
 
-#Package installation ####
-# We will be using several packages alongside phyloseq. First, we need to install these packages (if they are not already installed).
+# Install and load packages ####
+# We will be using several packages alongside phyloseq. First we need to install these packages (if they are not already installed).
 #if (!requireNamespace("BiocManager", quietly = TRUE))
 #  install.packages("BiocManager") # Installs BiocManager, a package that facilitates the download of packages from the BioConductor repository.
 
 #BiocManager::install("phyloseq") # Installs the phyloseq package (McMurdie & Holmes, 2013)
 #install.packages("dyplr") #Installs the dyplr package for data manipulation (Wickham et al., 2014)
 #BiocManager::install("DESeq2") # Installs DESeq2 for differential abundance analysis (Love et al., 2014)
-#BiocManager::install("BiocGenerics") # Installs BiocGenerics for variance stabilizing transformation (Huber et al., 2015)
-#BiocManager::install("SummarizedExperiment") # Installs SummarizedExperiment for variance stabilizing transformation (Morgan et al., 2022)
+#BiocManager::install("BiocGenerics") # Installs BiocGenerics for variance stabilizing transformatiom (Huber et al., 2015)
+#BiocManager::install("SummarizedExperiment") # Installs SummarizedExperiment for variance stabilizing transformatiom (Morgan et al., 2022)
 #install.packages("vegan") # Installs vegan for ecological statistical functions (Oksanen et al., 2020)
-#install.packages("rstatix") # Installs rstatix for pipe-friendly statistical analysis (Kassambara, 2021)
+#install.packages("rstatix") # Installs rstatix for pipe friendly statistical analysis (Kassambara, 2021)
 #install.packages("tidyverse") # Installs tidyverse for tidier coding (Wickham et al., 2019)
 #install.packages("ggplot2") # Installs ggplot2 for plotting (Wickham, 2016)
 #install.packages("ggpubr") # Installs ggpubr for plotting statistics from rstatix (Kassambara, 2023)
 #install.packages("RColorBrewer") # Installs RColorBrewer for ggplot color palettes (Neuwirth, 2022)
 
-# Next, we need to load these packages to be able to use their functions in this session. 
+# Next we need to load these packages to be able to use their functions in this session. 
 library(phyloseq); packageVersion("phyloseq")
 library(dplyr); packageVersion("dplyr")
 library(tidyverse); packageVersion("tidyverse")
@@ -37,17 +38,16 @@ library(BiocGenerics); packageVersion("BiocGenerics")
 library(ggpubr); packageVersion("ggpubr")
 library(RColorBrewer); packageVersion("RColorBrewer")
 
-# Load filtered phyloseq object ####
-setwd("~/Downloads/results/")
-ps_clean = readRDS("ps_clean.rds")
+# Load phyloseq object ####
+setwd("~/Documents/Argentina_bioinfoWorkshop_July2025")
+ps = readRDS("results/ps.rds"); ps
 
 # Alpha diversity ####
-# Create alpha diversity variables and prepare data for plotting.
-richness <- estimate_richness(ps_clean, measures = c("Shannon", "Chao1")) # here you can select from the several available diversity metrics (see documentation for more options)
+richness <- estimate_richness(ps, measures = c("Shannon", "Chao1","Simpson")) # here you can select from the several available diversity metrics (see documentation for more options)
 colnames(richness) # check the column names for the data frame that was made by estimate_richness()
-richness2 <- cbind(richness, ps_clean@sam_data) # merge the results with the existing sample data
+richness2 <- cbind(richness, ps@sam_data) # merge the results with the existing sample data
 
-# Plot the Shannon diversity between treatment groups
+# Plot 
 richness2$Treatment_Group <- factor(richness2$Treatment_Group, levels = c("Control", "Abx", "Abx+C.albicans")) # order categories 
 fig_shn_trt <- ggplot(richness2, aes(x= Treatment_Group, y = Shannon, color = Treatment_Group, fill = Treatment_Group)) + 
   geom_boxplot(color = "black", alpha = 0.5) +
@@ -62,32 +62,33 @@ fig_shn_trt <- ggplot(richness2, aes(x= Treatment_Group, y = Shannon, color = Tr
         legend.position = "none") # axis titles and legend aesthetics
 fig_shn_trt
 
-# Run the statistics.
 # Summary statistics (sample size, mean, standard deviation) for Shannon diversity grouped by treatment group to get an overview.
 richness2 %>%
   group_by(Treatment_Group) %>%
   rstatix::get_summary_stats(Shannon, type = "mean_sd")
+hist(richness2$Shannon)
 
-# Check if data is normally distributed (p-value < 0.05 indicates it is not normally distributed).
+# Shapiro test of normality (p-value < 0.05 is not normally distributed).
 richness2 %>%
   group_by(Treatment_Group) %>%
   shapiro_test(Shannon) # Shapiro-Wilk normality test
 
-# Assess homogeneity of sample variance (p-value < 0.05 indicates variance is not equal).
+# Homogeneity of sample variance (p-value < 0.05 indicates variance is not equal).
 richness2 %>% 
   levene_test(Shannon ~ Treatment_Group) # Levene's test for equality of variances
 
-# Run the ANOVA.
+# ANOVA test
 richness2 %>% 
-  anova_test(Shannon ~ Treatment_Group)
+  anova_test(Shannon ~ Treatment_Group) # compares the means of two or more groups
 
-# Test for multiple comparisons. 
+# Tukey's HSD (Honestly Significant Difference)
+# Test for multiple comparisons after ANOVA 
 stat.test_shannon <- richness2 %>% 
-  tukey_hsd(Shannon ~ Treatment_Group, conf.level=.95) %>% 
+  tukey_hsd(Shannon ~ Treatment_Group, conf.level=.95) %>% # examines if differences among sample means are significant
   filter(p.adj < 0.05) # filter for significant comparisons 
 stat.test_shannon
 
-# Add statistics to the plot - here we need to use ggpubr functions that are very similar to ggplot.
+# Add statistics to the plot
 stat.test_shannon <- add_xy_position(stat.test_shannon, x="Treatment_Group") # adds the y-axis position for the significance bars
 fig_shn_trt <- ggboxplot(richness2, x = "Treatment_Group", y = "Shannon", color = "Treatment_Group", fill = "Treatment_Group", alpha = 0.5)+
   theme_bw() +
@@ -102,26 +103,29 @@ fig_shn_trt <- ggboxplot(richness2, x = "Treatment_Group", y = "Shannon", color 
   stat_pvalue_manual(stat.test_shannon, label = "p.adj.signif", tip.length = 0.01, size = 8) # add test results to the plot
 fig_shn_trt
 
-# Activity 1: reproduce this plot and statistics for Chao1.
+# Activity 1 #### 
+# Reproduce this plot and statistics for Chao1 and Simpson
+
+# SLIDES ####
 
 # Beta diversity ####
-# Save sample data from ps_clean. 
-sdf <- as(sample_data(ps_clean), "data.frame")
+# Save sample data from ps. 
+sdf <- as(sample_data(ps), "data.frame")
 sdf$Treatment_Group <- factor(sdf$Treatment_Group, levels = c("Control", "Abx", "Abx+C.albicans")) # order categories 
 
-# Create function geo means for Variance Stabilizing Transformation (based on sample size).
+# Create function geom means for Variance Stabilizing Transformation (based on sample size).
 gm_mean = function(x, na.rm = TRUE){exp(sum(log(x[x > 0]), na.rm = na.rm) / length(x))}
 
-# Variance Stabilizing Transformation.
-ps_clean_deseq <- phyloseq_to_deseq2(ps_clean, ~ Treatment_Group) # convert to DESeq2 format 
+# Variance Stabilizing Transformation
+ps_deseq <- phyloseq_to_deseq2(ps, ~ Treatment_Group) # convert to DESeq2 format 
 
 # Convert counts to integer.
-ps_clean_deseq = estimateSizeFactors(ps_clean_deseq, geoMeans = apply(counts(ps_clean_deseq), 1, gm_mean))
-vst_blind <- DESeq2::varianceStabilizingTransformation(ps_clean_deseq, blind = TRUE)
+ps_deseq = estimateSizeFactors(ps_deseq, geoMeans = apply(counts(ps_deseq), 1, gm_mean))
+vst_blind <- DESeq2::varianceStabilizingTransformation(ps_deseq, blind = TRUE)
 vst_blind_mat <- SummarizedExperiment::assay(vst_blind)
 vst_blind_mat <- t(vst_blind_mat) 
 vst_blind_mat[which(vst_blind_mat < 0)] <- 0 
-#dists <- dist(t(assay(ps_clean_deseq)))
+dists <- dist(t(assay(ps_deseq)))
 
 # Computing Bray-Curtis Dissimilarities and PCoA.
 comm_vst_blind_mat <- vegdist(vst_blind_mat, "bray")
@@ -163,26 +167,29 @@ permanova_treatment
 
 # Activity 2: repeat the variance stabilization, plot and PERMANOVA but with sex as the variable of interest.
 
+#SLIDES ####
+
 # Relative Abundance ####
 # Prepare the taxa table for plotting. 
-taxa <- data.frame(tax_table(ps_clean)) # extract taxa table as a data frame
+taxa <- data.frame(tax_table(ps)) # extract taxa table as a data frame
 taxa2 <- taxa %>%
   replace_na(list(Genus = "Unassigned", Species = "unassigned")) %>% # replace NAs as unassigned to ensure they are plotted 
   unite("Species_fullname", Genus:Species, remove = FALSE) # merge genus and species names and save as a new column
 
 taxa2 <- as.matrix(taxa2) # make sure taxa table is in matrix form to fit back into ps pbject
-tax_table(ps_clean) <- taxa2 # add taxa table back to the ps object
-ps_clean
+tax_table(ps) <- taxa2 # add taxa table back to the ps object
+ps
 
 # Agglomerate at genus level and relativise.
-ps_genus <- ps_clean %>%
-  tax_glom(taxrank = "Genus") # agglomerate at the genus level
+ps_genus <- ps %>%
+  tax_glom(taxrank = "Genus") %>% # agglomerate at the genus level
+  transform_sample_counts(function(x) x*100 / sum(x)) # relativise sample counts
 
 # Melt the phyloseq object.  
 ps_melt = psmelt(ps_genus)
 
 # Order based on abundance.
-ps_ord = ps_melt %>%
+ps_ord <- ps_melt %>%
   group_by(Genus) %>%
   summarize_at("Abundance", sum) %>% # add total abundance of each genus
   arrange(dplyr::desc(Abundance)) %>% # descending order
@@ -217,27 +224,27 @@ fig_genus_top10
 
 # Differential abundance with DESeq ####
 # Let's look at taxa that are differentially abundant in Control vs Abx
-ps_clean_filt <- ps_clean %>%
+ps_filt <- ps %>%
   subset_samples(Treatment_Group == "Control" | Treatment_Group == "Abx")
 
 # First we need to convert the phyloseq object to the DESeq2 format.
-ps_clean_deseq = phyloseq_to_deseq2(ps_clean_filt, ~ Treatment_Group) # convert to DESeq2 format
+ps_deseq = phyloseq_to_deseq2(ps_filt, ~ Treatment_Group) # convert to DESeq2 format
 
 # This data set contains several zeros so we need to use a zero-tolerant variant of geometric mean.
 gm_mean = function(x, na.rm=TRUE){
   exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
 }
-geoMeans = apply(counts(ps_clean_deseq), 1, gm_mean)
+geoMeans = apply(counts(ps_deseq), 1, gm_mean)
 
 # Estimation of size factors and dispersion and fits the model.
-ps_clean_deseq = estimateSizeFactors(ps_clean_deseq, geoMeans = geoMeans)
-ps_clean_deseq = DESeq(ps_clean_deseq, test="Wald", fitType="parametric") 
+ps_deseq = estimateSizeFactors(ps_deseq, geoMeans = geoMeans)
+ps_deseq = DESeq(ps_deseq, test="Wald", fitType="parametric") 
 
 # Lets take a look at the results from the test above. 
-res = results(ps_clean_deseq, cooksCutoff = FALSE) # extract results without applying Cook's cut off (distance threshold) 
+res = results(ps_deseq, cooksCutoff = FALSE) # extract results without applying Cook's cut off (distance threshold) 
 alpha = 0.05 # set significance threshold
 sigtab = res[which(res$padj < alpha), ] # filter for significant results with the adjusted p-values smaller than 0.05
-sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(ps_clean)[rownames(sigtab), ], "matrix")) # combine significant results with the phyloseq taxonomy table
+sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(ps)[rownames(sigtab), ], "matrix")) # combine significant results with the phyloseq taxonomy table
 head(sigtab %>% dplyr::select(log2FoldChange, padj, Genus)) # view Log2FoldChange, adjusted p-value and genus for significant results
 
 # Now we can plot the results. We will represent the results at the Genus level.
@@ -260,5 +267,6 @@ fig_CtlAbx
 
 # Activity 4: Assess differentially abundant taxa between Abx and Abx+C.albicans
 
-# Save the workspace
-save.image("BioinfoWorkshop_statisticalAnalyses.RData")
+# Save the workspace ####
+save.image("~/Documents/Argentina_bioinfoWorkshop_July2025/results/antibio_statisticalAnalyses.RData")
+
