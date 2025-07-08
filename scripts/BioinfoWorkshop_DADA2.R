@@ -1,194 +1,226 @@
 ###############################################################
-# Script to process amplicon sequencing data with DADA2       #
+# Microbiome Bioinformatic Analysis                           #
+# 16S amplicon sequencing data with DADA2                     #
 # Based on DADA2 tutorial by Benjamin Callahan                #
-# Data: Mice - Antibiotic experience                          #
-# By: ArrietaLab - University of Calgary                      #
-# Author: Mona Parizadeh                                      # 
-# Dates: July 2025                                            #
-# Location: Argentina                                         #
+# Data: Mice - Antibiotic Experiment                          #
+# Author: ArrietaLab - University of Calgary                  #
+# Date: July 2025                                             #
+# Location: IUCBC - Córdoba (Argentina)                       #
 ###############################################################
 
-## 1.1 Install Packages ####
+# Install & Load Packages ####
 
-# Install DADA2 package
-
+# Install and load DADA2 (Callahan et al., 2016)
+# First install the BiocManager package so that you can install packages from the BioConductor repository
+# To see other ways of package installation please see the Introduction to R slides
 #if (!requireNamespace("BiocManager", quietly = TRUE))
-#  install.packages("BiocManager") # Installs BiocManager, enabling you to download packages from the BioConductor repository (similar to CRAN)
-#library(BiocManager) # Loads BiocManager package
+ # install.packages("BiocManager") 
+#library(BiocManager) # library() loads the installed package
 
-#BiocManager::install("dada2") # Install DADA2 package from the BioConductor repository (only required once)
-library(dada2); packageVersion("dada2") # Loads DADA2 package (Callahan et al., 2016)
+# Then use the install() function from BiocManager to install DADA2 (only required once)
+#BiocManager::install("dada2")  
+
+# Now you can load DADA2 package 
+library(dada2); packageVersion("dada2") #1.30.0
+# packageVersion() to verify the version of package you use for the analysis
+# This is essential for reproducibility when writing scientific papers.
 
 # For any installation issues, visit: https://benjjneb.github.io/dada2/dada-installation.html
 
-# Install tidyverse 
+# Install and load tidyverse (Wickham et al., 2019)
+# Useful for streamlined coding
+#install.packages("tidyverse") 
+library(tidyverse); packageVersion("tidyverse") #2.0.0
 
-#install.packages("tidyverse") # Installs tidyverse package (only required once)
-library(tidyverse); packageVersion("tidyverse") # Loads tidyverse package for tidier coding (Wickham et al., 2019)
+# Note:
+# You only need to install a package once on our computer. 
+# To use the installed package, you need to load the library every time you start a new R/RStudio environment.
+# If you update R, you need to re-install all packages
 
+# Set Up R Environment ####
+# Clear objects from the workspace (global environment). 
+# This ensures only the data you load into your environment is present and helps avoid any errors.
+rm(list = ls(all = TRUE))  
 
-## 1.2 Set Up R Environment ####
+# Download required data from https://github.com/memoll/MicrobiomeBioinformaticsAnalysisWorkshop2025
 
-# Prepare R environment
-rm(list = ls(all = TRUE)) # Clears your global environment
+# Set working directory to the file path where your data is located
+setwd("~/Documents/Argentina_bioinfoWorkshop_July2025") 
+# Check if your working directory is correctly set
+getwd() 
 
-# Set working directory
-setwd("~/Downloads/data/mouse_demultiplexed/")
-getwd() # Check that your working directory is correctly set
+# Set path to the folder where sequencing files are located
+#path <- "~/Documents/Argentina_bioinfoWorkshop_July2025/mouse_demultiplexed" 
+path <- "mouse_demultiplexed" # Creates path object (you don't need to specify entire path if it's the same as your working directory)
+list.files(path, pattern = "fastq") # Lists fastq sequencing files at path location that have a specific naming convention
 
-# Set path to folder where sequencing files are located
-path <- "~/Downloads/data/mouse_demultiplexed/" # Creates path object
-list.files(path, pattern = "fastq") # Lists fastq sequencing files at path location
+# List and sort forward and reverse fastq files 
+fnFs <- sort(list.files(path, pattern = "_R1_001.fastq", full.names = TRUE)) # Forward sequences, indicated by R1
+fnRs <- sort(list.files(path, pattern = "_R2_001.fastq", full.names = TRUE)) # Reverse sequences, indicated by R2
+fnFs
+fnRs
 
-# Save forward and reverse sequence file names into separate objects for downstream processing
-fnFs <- sort(list.files(path, pattern = "_R1_001.fastq", full.names = TRUE)) # Forward sequences
-fnRs <- sort(list.files(path, pattern = "_R2_001.fastq", full.names = TRUE)) # Reverse sequences
+# Inspect Sequence Quality ####
+plotQualityProfile(fnFs[1:2]) # Forward sequences quality for the first 2 samples
+plotQualityProfile(fnRs[1:2]) # Reverse sequences quality for the first 2 samples
 
-## 1.3 Inspect Sequence Quality ####
+# Repeat for all 16 or you can check all at once
+plotQualityProfile(fnFs[1:16]) # Forward sequences quality for all 16 samples
+plotQualityProfile(fnRs[1:16]) # Reverse sequences quality for all 16 samples
 
-# Inspect sequence quality
-plotQualityProfile(fnFs[1:4]) # Forward sequences quality for the first 4 sequences
-plotQualityProfile(fnRs[1:4]) # Reverse sequences quality for the first 4 sequences
-
-plotQualityProfile(fnFs) # Forward sequences quality for all forward sequences (may take a while to run)
-plotQualityProfile(fnRs) # Reverse sequences quality for all forward sequences (may take a while to run)
-
-# Overall sequence quality of all sequences
+# Overall sequence quality across all samples
 plotQualityProfile(fnFs, aggregate = TRUE) # Forward sequences quality aggregated in one plot
 plotQualityProfile(fnRs, aggregate = TRUE) # Forward sequences quality aggregated in one plot
 
-# Save sequence plots (optional)
-jpeg(file = "Forward Sequences 1-4.jpeg", width = 2000, height = 2000, units = "px", res = 300)
-plotQualityProfile(fnFs[1:4]) # Forward sequences quality 
-dev.off()
+#*****SLIDES####
 
-## 1.4 Filter & Trim ####
-
-# Create a folder to store filtered and trimmed sequences
-
+# Filter & Trim ####
 # Create a list of sample names
-sample.names <- strsplit(basename(fnFs), "_") %>% # Creates a list of character vectors for each sample split at the underscore
-  sapply(`[`, 1) # sapply uses the first element in each character vector as the sample name
-sample.names # View sample.names to ensure our list is correct
+# basename: sets the path to an object
+# strsplit: splits the elements of a character vector x into substrings according to the matches to substring split within them
+sample.names <- sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+head(sample.names) # make sure the file list is correct
 
-# Pastes samples names and filtered specification together to make new file names, then stores them in the new "filtered" folder at our path destination.
+# Get more information about a function by adding "?" in front of it to open the help pages
+# ?sapply
+
+# Assign the filenames for the filtered fastq.gz files
 filtFs <- file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz")) # Forward filtered sequences
 filtRs <- file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz")) # Reverse filtered sequences
+# Use samples names for the filtered files
+names(filtFs) <- sample.names 
+names(filtRs) <- sample.names 
 
-names(filtFs) <- sample.names # Applies the sample names as derived in the previous step to the filtered files
-names(filtRs) <- sample.names # Applies the sample names as derived in the previous step to the filtered files
+# Filter & Trim
+# ?filterAndTrim #default: compressed files
+# truncLen: discard reads shorter than this; (forward trim length, reverse trim length)
+  # Since the quality of the reverse reads are always worse, we trim more off of these
+# maxN: max number of ambiguous bases (N) allowed; DADA2 cannot handle ambiguous bases so we keep it at 0.
+# maxEE: max number of estimated errors allowed by an individual read; increase ONLY if you have low quality reads (see out2)
+# truncQ: truncates reads at the first instance of a Q score less than or equal to the value specified
+# multithread: using multiple CPU threads to run intensive tasks in parallel; 
+  # if TRUE: uses all available CPUs, integer: number of CPUs to run the task; 
+  # if FALSE (default): only uses one single CPU (more processing time)
+  # On Windows, set multithread = FALSE; Windows does not support multithreading
 
-# Filter and trim
 out <- filterAndTrim(fwd = fnFs, filt = filtFs, rev = fnRs, filt.rev = filtRs, truncLen = c(240,160),
                      maxN = 0, maxEE = c(2,2), truncQ = 2, rm.phix = TRUE,
-                     compress = TRUE, multithread = TRUE) # On Windows, set multithread = FALSE
+                     compress = TRUE, multithread = TRUE) 
 head(out)
 
+
 # Play around with truncation length and expected errors
-out2 <- filterAndTrim(fwd = fnFs, filt = filtFs, rev = fnRs, filt.rev = filtRs, truncLen = c(240,155),
-                      maxN = 0, maxEE = c(2,5), truncQ = 2, rm.phix = TRUE,
-                      compress = TRUE, multithread = TRUE) 
-head(out2)
+#out2 <- filterAndTrim(fwd = fnFs, filt = filtFs, rev = fnRs, filt.rev = filtRs, truncLen = c(240,155),
+ #                    maxN = 0, maxEE = c(2,5), truncQ = 2, rm.phix = TRUE,
+  #                   compress = TRUE, multithread = TRUE) 
+#head(out2)
 # In this case, the least amount of reads are lost in the first output - we will therefore use it in the subsequent steps.
 
-# After you filter and trim, it is good practice to go back and make sure the quality is still good using the plotQualityProfile function.
-plotQualityProfile(filtFs) # Check quality of filtered forward sequences
-plotQualityProfile(filtRs) # Check quality of filtered reverse sequences
-
-# Compare unfiltered and filtered files
+# Compare sequence quality profiles of unfiltered and filtered files
 plotQualityProfile(c(fnFs[1],filtFs[1])) # Compares first forward sequence raw vs. filtered
 plotQualityProfile(c(fnRs[1],filtRs[1])) # Compares first reverse sequence raw vs. filtered
 
 # Assess the percentage of reads lost with filtering and trimming
+# Function to calculate the percentage of remaining reads
 percentage_reads <- function(output){
   as.data.frame(output) %>% mutate(percentage = 100*reads.out/reads.in)
-} # Creates a function for calculating percentage reads using output objects
-percentage_reads(out) # Shows you the percentage of reads maintained after filtering and trimming
+} 
+percentage_reads(out) 
 
-## 1.5 Error Rates ####
+# Tells you the average percentage of reads out across all samples
+mean(percentage_reads(out)$percentage)
 
+#*****SLIDES####
+
+# Error Rates ####
 # Learn the error rates
 errF <- learnErrors(filtFs, multithread = TRUE) # Creates list with forward error rates
 errR <- learnErrors(filtRs, multithread = TRUE) # Creates list with reverse error rates
 
 # Visualize estimated error rates
 plotErrors(errF, nominalQ = TRUE) # Forward error rates
+plotErrors(errR, nominalQ = TRUE) # Reverse error rates
 
-## 1.6 Sample Inference ####
+#*****SLIDES####
 
-# Determine the number of sequence variants from the total unique sequences in each sample
-dadaFs <- dada(filtFs, err = errF, multithread = TRUE) # Creates list with sample inference for each forward sequence
-dadaRs <- dada(filtRs, err = errR, multithread = TRUE) # Creates list with sample inference for each reverse sequence
-
-# Inspect the returned dada class object for the first forward and reverse sequences
+# Sample Inference (Denoising) ####
+# Determine the number of unique ASVs per sample
+dadaFs <- dada(filtFs, err = errF, pool = "pseudo", multithread = TRUE) 
+dadaRs <- dada(filtRs, err = errR, pool = "pseudo", multithread = TRUE) 
 dadaFs[[1]] 
 dadaRs[[1]]
+# pool = TRUE: pools all samples together prior to sample denoising.
+# pool = FALSE: denoising is performed on each sample separately. 
+# pool = "pseudo": pseudo-pooling includes 2 steps:
+# 1. Denoising and processing samples individually to detect prior ASVs (to increase the algorithm's sensitivity to rare variants)
+# 2. Re-processing samples individually based on prior ASVs to detect rare variants 
+# Recommended when the diversity among samples is high, but it doubles the processing time.
 
-## 1.7 Construct Sequence Table ####
+#*****SLIDES####
 
-# First, we need to merge the paired reads (forward and reverse sequences) to generate denoised sequences.
-# This requires at least 12 basepairs to overlap between the forward and reverse reads.
-merged <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose = TRUE) # Creates list of data frames for each sample
+# Construct Sequence Table ####
 
-# Construct sequence table from the merged reads
-# Also known as an ASV or amplicon sequence variant table
-seqtab <- makeSequenceTable(merged) # Constructs sequence table (matrix)
-dim(seqtab) # Check dimensions - the first number should be the number of samples you have, the second is the number of unique ASVs
+# Merge denoised forward and reverse sequences 
+mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, minOverlap = 12, maxMismatch = 0, returnRejects = FALSE, verbose = TRUE) # Creates list of data frames for each sample
+head(mergers[[1]])
+# minOverlap: Min overlap length: 12 bp (default)
+  # May need to modify the previous trimming to make reads overlap
+# returnRejects = TRUE, doesn't discard pairs failing the mismatch criteria and included them in the output dataframe. 
+  # This offers flexibility in data handling, allowing users to tailor the merging process to their specific research needs.
 
-table(nchar(getSequences(seqtab))) # Inspect distribution of sequence lengths
+# Construct sequence table (ASV table) from the merged reads
+seqtab <- makeSequenceTable(mergers) # matrix
+dim(seqtab) # rows (first number): number of samples, columns (second number): number of unique ASVs
+
+# Inspect distribution of sequence lengths
+table(nchar(getSequences(seqtab))) # Tells you the number of sequences at each length
+# The lengths of the merged sequences should all fall within the expected range for the length of the V4 amplicon in the 16S rRNA gene 
+# 515F–806R primer pair size typically ranges from 300 to 350 bp, including primer sequences, natural length variations within the V4 region, and specific primer design considerations
+# Without primers, the 16S V4 region is 250-254 bp.
 
 # Remove chimeras
 # These are single sequences generated from multiple parent sequences and are considered an artifact of sequencing technologies.
 seqtab.nochim <- removeBimeraDenovo(seqtab, method = "consensus", multithread = TRUE, verbose = TRUE)
-dim(seqtab.nochim) # Check dimensions
+dim(seqtab.nochim) 
 
-1-sum(seqtab.nochim)/sum(seqtab) # Examine percent lost to chimeric sequences 
+# Percentage of non-chimeric sequences
+sum(seqtab.nochim)/sum(seqtab) * 100 
 
-## 1.8 Track Reads Through Pipeline ####
+# Track Reads Through Pipeline ####
+# How many reads are lost after each step?
 
-# The next quality control step is to track reads through the pipeline by generating a table of how many reads are lost after each step in the pipeline.
-
-# Create function to tell you the abundance of each sequence
+# Creates a function to tell you the frequency of each sequence
 getN <- function(N){
   sum(getUniques(N))
-} # getUniques function looks at object, gets sequence name, and tells you how abundant it is
+} 
+# getUniques: looks at object, gets sequence name, and tells you how many times it is observed
 
-track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(merged, getN), rowSums(seqtab.nochim))
-# cbind combines the information derived from all of these functions into an overview table
-# When only processing one sample, remove sapply (e.g. replace sapply(dadaFs, getN) with getN(dadaFs)). sapply allows you to apply a function to every object in a list.
-
-colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim") # Naming columns of overview table
-rownames(track) <- sample.names # Naming rows of overview table
-
-track # View track to see how the number of reads change with each pipeline step
-
+track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim)) #cbind: combine by column
+colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim") # name columns
+rownames(track) <- sample.names #name rows
+track
+view(track) # opens track in a new window
 # We can see that most of our reads were maintained from step to step, apart from removing chimeras.
 
-## 1.9 Assign Taxonomy ####
+#*****SLIDES####
 
-# Download the SILVA 138.1 prokaryotic SSU taxonomic training data formatted for DADA2 from https://zenodo.org/record/4587955#.ZBVL8uzMJa0
-taxa <- assignTaxonomy(seqtab.nochim, "silva_nr99_v138.1_wSpecies_train_set.fa.gz", multithread = TRUE) # Assigns taxonomy to species level
-# This step may take a while to run
+# Download the DADA2-formatted reference database from https://benjjneb.github.io/dada2/training.html
+# For future work, check for the most recent update of the 16S database here https://www.arb-silva.de/
 
-taxa.print <- taxa 
-rownames(taxa.print) <- NULL # Removing sequence rownames for display only
-head(taxa.print) # Examine taxonomic assignments 
+# Assign Taxonomy ####
+# This step may take a while to run, especially when working with large datasets
+# It is good practice to save your environment prior to running this step to avoid losing your work if your computer crashes or freezes
 
-# Examine how many sequences are identified at different taxonomic levels
-table(taxa[,2], useNA = "always") # Tells you how many taxa were assigned to each phylum (taxonomic level 2)
+save.image("~/Documents/Argentina_bioinfoWorkshop_July2025/results/antibio_dada2.RData") # Save the workspace
 
-# Can add decreasing = TRUE to get most abundant at the top
-sort(table(taxa[,5], useNA = "always"), decreasing = TRUE) # Tells you how many taxa were assigned to each family (taxonomic level 5)
+taxa <- assignTaxonomy(seqtab.nochim, "~/Downloads/Argentina_bioinfoWorkshop_July2025/silva_nr99_v138.2_toSpecies_trainset.fa.gz", multithread = TRUE) # Assigns taxonomy to species level
+# This step may take a while to run, especially when working with large datasets
 
-## 1.10 Create phyloseq Object ####
+colnames(taxa) = c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species") # Assign column names
+unname(head(taxa)) # Hide row names (long sequences)
+dim(taxa) # Dimensions of taxa table; # unique ASVs (rows), # columns (KPCOGFS)
 
-# Install phyloseq
-#BiocManager::install("phyloseq") # Installs phyloseq package (only required once)
-library(phyloseq); packageVersion("phyloseq") # Loads phyloseq package
+view(taxa) # Examine taxa table
 
-# Load metadata
-mouse_metadata <- read.csv("data/mouse_metadata.csv") 
-rownames(mouse_metadata) <- mouse_metadata$Sample_ID # Change row names to reflect sample IDs
-
-# Save the workspace
-save.image("BioinfoWorkshop_DADA2.RData")
+# Save your final workspace ####
+save.image("~/Documents/Argentina_bioinfoWorkshop_July2025/results/antibio_dada2.RData")
