@@ -41,7 +41,7 @@ library(RColorBrewer); packageVersion("RColorBrewer")
 
 
 # Load phyloseq object #### ----------------------------------------------------
-setwd("~/Documents/Postdoc/Argentina Workshop")
+setwd("~/Downloads/")
 ps = readRDS("ps.rds"); ps
 # Recall: this was the phyloseq object we generated during our phyloseq session
 
@@ -267,17 +267,26 @@ ps_filt <- ps %>%
   subset_samples(Treatment_Group == "Control" | Treatment_Group == "Abx")
 
 # First we need to convert the phyloseq object to the DESeq2 format.
-ps_deseq = phyloseq_to_deseq2(ps_filt, ~ Treatment_Group) # convert to DESeq2 format
+phTOds = phyloseq_to_deseq2(ps_filt, ~ Treatment_Group) # convert to DESeq2 format
+is(phTOds); isS4(phTOds)
+#contents
+slotNames(phTOds) 
+#estimate size factors 
+fcs = estimateSizeFactors(phTOds) #no need to calculate geometric means
+#Bayesian estimation of dispersion
+dsp = estimateDispersions(fcs)
+plotDispEsts(dsp)
 
-# This data set contains several zeros so we need to use a zero-tolerant variant of geometric mean.
-gm_mean = function(x, na.rm=TRUE){
-  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-}
-geoMeans = apply(counts(ps_deseq), 1, gm_mean)
+# # If data set contains several zeros, we need to use a zero-tolerant variant of geometric mean.
+# gm_mean = function(x, na.rm=TRUE){
+#   exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+# }
+# geoMeans = apply(counts(phTOds), 1, gm_mean)
+# # Estimation of size factors and dispersion and fits the model.
+# phTOds = estimateSizeFactors(ps_deseq, geoMeans = geoMeans)
 
-# Estimation of size factors and dispersion and fits the model.
-ps_deseq = estimateSizeFactors(ps_deseq, geoMeans = geoMeans)
-ps_deseq = DESeq(ps_deseq, test="Wald", fitType="parametric") 
+# DeSeq2
+ps_deseq = DESeq(dsp, test="Wald", fitType="parametric") 
 
 # Lets take a look at the results from the test above. 
 res = results(ps_deseq, cooksCutoff = FALSE) # extract results without applying Cook's cut off (distance threshold) 
@@ -292,8 +301,8 @@ x = sort(x, TRUE) # sort from highest to lowest
 sigtab$Genus = factor(as.character(sigtab$Genus), levels=names(x)) # convert Genus to factor with the levels specified as x to organize the plot
 
 # Plot the results.
-nb.cols <- 18 # specify how many colors you will need
-mycolors <- colorRampPalette(brewer.pal(18, "RdBu"))(nb.cols)
+nb.cols <- 31 # specify how many colors you will need
+mycolors <- colorRampPalette(brewer.pal(31, "RdBu"))(nb.cols)
 fig_CtlAbx <- ggplot(sigtab, aes(x=Genus, y=log2FoldChange, color=Genus)) + geom_point(size=6) + 
   labs(title = "Differentially abundant genera in Control vs Abx") +
   theme_bw() + 
