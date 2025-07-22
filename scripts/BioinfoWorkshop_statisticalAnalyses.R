@@ -72,7 +72,6 @@ fig_shn_trt <- ggplot(richness2, aes(x= Treatment_Group, y = Shannon, color = Tr
         legend.position = "none") # axis titles and legend aesthetics
 fig_shn_trt
 
-
 # Summary statistics (sample size, mean, standard deviation) for Shannon diversity 
 # grouped by treatment group to get an overview.
 richness2 %>%
@@ -283,13 +282,13 @@ plotDispEsts(dsp)
 # }
 # geoMeans = apply(counts(phTOds), 1, gm_mean)
 # # Estimation of size factors and dispersion and fits the model.
-# phTOds = estimateSizeFactors(ps_deseq, geoMeans = geoMeans)
+# phTOds = estimateSizeFactors(phTOds, geoMeans = geoMeans)
 
 # DeSeq2
-ps_deseq = DESeq(dsp, test="Wald", fitType="parametric") 
+deseq = DESeq(dsp, test="Wald", fitType="parametric") 
 
 # Lets take a look at the results from the test above. 
-res = results(ps_deseq, cooksCutoff = FALSE) # extract results without applying Cook's cut off (distance threshold) 
+res = results(deseq, cooksCutoff = FALSE) # extract results without applying Cook's cut off (distance threshold) 
 alpha = 0.05 # set significance threshold
 sigtab = res[which(res$padj < alpha), ] # filter for significant results with the adjusted p-values smaller than 0.05
 sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(ps)[rownames(sigtab), ], "matrix")) # combine significant results with the phyloseq taxonomy table
