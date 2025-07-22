@@ -8,22 +8,23 @@
 # Location: IUCBC - Cordoba (Argentina)                       #
 ###############################################################
 
-# Install and load packages ####
-# We will be using several packages alongside phyloseq. First we need to install these packages (if they are not already installed).
-#if (!requireNamespace("BiocManager", quietly = TRUE))
-#  install.packages("BiocManager") # Installs BiocManager, a package that facilitates the download of packages from the BioConductor repository.
 
-#BiocManager::install("phyloseq") # Installs the phyloseq package (McMurdie & Holmes, 2013)
-#install.packages("dyplr") #Installs the dyplr package for data manipulation (Wickham et al., 2014)
-#BiocManager::install("DESeq2") # Installs DESeq2 for differential abundance analysis (Love et al., 2014)
-#BiocManager::install("BiocGenerics") # Installs BiocGenerics for variance stabilizing transformatiom (Huber et al., 2015)
-#BiocManager::install("SummarizedExperiment") # Installs SummarizedExperiment for variance stabilizing transformatiom (Morgan et al., 2022)
-#install.packages("vegan") # Installs vegan for ecological statistical functions (Oksanen et al., 2020)
-#install.packages("rstatix") # Installs rstatix for pipe friendly statistical analysis (Kassambara, 2021)
-#install.packages("tidyverse") # Installs tidyverse for tidier coding (Wickham et al., 2019)
-#install.packages("ggplot2") # Installs ggplot2 for plotting (Wickham, 2016)
-#install.packages("ggpubr") # Installs ggpubr for plotting statistics from rstatix (Kassambara, 2023)
-#install.packages("RColorBrewer") # Installs RColorBrewer for ggplot color palettes (Neuwirth, 2022)
+# Install and load packages #### -----------------------------------------------
+# We will be using several packages alongside phyloseq. First we need to install these packages (if they are not already installed).
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+# install.packages("BiocManager") # Installs BiocManager, a package that facilitates the download of packages from the BioConductor repository.
+
+# BiocManager::install("phyloseq") # Installs the phyloseq package (McMurdie & Holmes, 2013)
+# install.packages("dyplr") #Installs the dyplr package for data manipulation (Wickham et al., 2014)
+# BiocManager::install("DESeq2") # Installs DESeq2 for differential abundance analysis (Love et al., 2014)
+# BiocManager::install("BiocGenerics") # Installs BiocGenerics for variance stabilizing transformatiom (Huber et al., 2015)
+# BiocManager::install("SummarizedExperiment") # Installs SummarizedExperiment for variance stabilizing transformatiom (Morgan et al., 2022)
+# install.packages("vegan") # Installs vegan for ecological statistical functions (Oksanen et al., 2020)
+# install.packages("rstatix") # Installs rstatix for pipe friendly statistical analysis (Kassambara, 2021)
+# install.packages("tidyverse") # Installs tidyverse for tidier coding (Wickham et al., 2019)
+# install.packages("ggplot2") # Installs ggplot2 for plotting (Wickham, 2016)
+# install.packages("ggpubr") # Installs ggpubr for plotting statistics from rstatix (Kassambara, 2023)
+# install.packages("RColorBrewer") # Installs RColorBrewer for ggplot color palettes (Neuwirth, 2022)
 
 # Next we need to load these packages to be able to use their functions in this session. 
 library(phyloseq); packageVersion("phyloseq")
@@ -38,17 +39,26 @@ library(BiocGenerics); packageVersion("BiocGenerics")
 library(ggpubr); packageVersion("ggpubr")
 library(RColorBrewer); packageVersion("RColorBrewer")
 
-# Load phyloseq object ####
-setwd("~/Documents/Argentina_bioinfoWorkshop_July2025")
-ps = readRDS("results/ps.rds"); ps
 
-# Alpha diversity ####
+# Load phyloseq object #### ----------------------------------------------------
+setwd("~/Documents/Postdoc/Argentina Workshop")
+ps = readRDS("ps.rds"); ps
+# Recall: this was the phyloseq object we generated during our phyloseq session
+
+
+# Alpha diversity #### ---------------------------------------------------------
 richness <- estimate_richness(ps, measures = c("Shannon", "Chao1","Simpson")) # here you can select from the several available diversity metrics (see documentation for more options)
 colnames(richness) # check the column names for the data frame that was made by estimate_richness()
 richness2 <- cbind(richness, ps@sam_data) # merge the results with the existing sample data
 
-# Plot 
-richness2$Treatment_Group <- factor(richness2$Treatment_Group, levels = c("Control", "Abx", "Abx+C.albicans")) # order categories 
+# Let's take a look at our richness dataset
+View(richness2)
+
+# Reordering the treatment group categories before we plot the data 
+# The order of the treatment groups on your plot with otherwise be in alphabetical order
+richness2$Treatment_Group <- factor(richness2$Treatment_Group, levels = c("Control", "Abx", "Abx+C.albicans")) 
+
+# Plotting the Shannon diversity values according to treatment group
 fig_shn_trt <- ggplot(richness2, aes(x= Treatment_Group, y = Shannon, color = Treatment_Group, fill = Treatment_Group)) + 
   geom_boxplot(color = "black", alpha = 0.5) +
   geom_jitter(aes(color = Treatment_Group), position = position_jitter(0.2),  size = 1.2) +
@@ -62,40 +72,68 @@ fig_shn_trt <- ggplot(richness2, aes(x= Treatment_Group, y = Shannon, color = Tr
         legend.position = "none") # axis titles and legend aesthetics
 fig_shn_trt
 
-# Summary statistics (sample size, mean, standard deviation) for Shannon diversity grouped by treatment group to get an overview.
+
+# Summary statistics (sample size, mean, standard deviation) for Shannon diversity 
+# grouped by treatment group to get an overview.
 richness2 %>%
   group_by(Treatment_Group) %>%
   rstatix::get_summary_stats(Shannon, type = "mean_sd")
 hist(richness2$Shannon)
 
+  # We can also look at the distribution of Shannon values using a density plot
+  ggplot(richness2, aes(x=Shannon))+geom_density()
+
+  
+# Checking model assumptions for an ANOVA
 # Shapiro test of normality (p-value < 0.05 is not normally distributed).
+  # In other words, a statistically significant p-value (p < 0.05) means the distribution
+  # is statistically significantly different from a normal distribution
 richness2 %>%
-  group_by(Treatment_Group) %>%
   shapiro_test(Shannon) # Shapiro-Wilk normality test
 
-# Homogeneity of sample variance (p-value < 0.05 indicates variance is not equal).
+# Homogeneity of sample variance (p-value < 0.05 indicates variance per group is not equal).
 richness2 %>% 
   levene_test(Shannon ~ Treatment_Group) # Levene's test for equality of variances
+
 
 # ANOVA test
 richness2 %>% 
   anova_test(Shannon ~ Treatment_Group) # compares the means of two or more groups
 
+  # Note: in cases where the data is not normally distributed, a transformation of the 
+  # outcome variable can be used to make it normally distributed OR a Kruskal-Wallis  
+  # test can be used instead of a standard ANOVA. A Kruskal-Wallis test can also be used
+  # with unequal variances.  
+
+  # As an example:
+  # richness2 %>% 
+  #    kruskal_test(Shannon ~ Treatment_Group)
+
 # Tukey's HSD (Honestly Significant Difference)
-# Test for multiple comparisons after ANOVA 
+# Test for multiple comparisons after ANOVA (parametric)
 stat.test_shannon <- richness2 %>% 
   tukey_hsd(Shannon ~ Treatment_Group, conf.level=.95) %>% # examines if differences among sample means are significant
   filter(p.adj < 0.05) # filter for significant comparisons 
 stat.test_shannon
 
-# Add statistics to the plot
+  # In cases where a Kruskal-Wallis test was used, a Dunn's test or Wilcoxon's test
+  # can be used to obtain pairwise p-values. 
+
+  # As an example:
+  # stat.test_shannon <- richness2 %>% 
+  #  dunn_test(Shannon ~ Treatment_Group) %>% # examines if differences among sample means are significant
+  #  filter(p.adj < 0.05) # filter for significant comparisons 
+  # stat.test_shannon
+
+
+# Add statistics to the box plot
 stat.test_shannon <- add_xy_position(stat.test_shannon, x="Treatment_Group") # adds the y-axis position for the significance bars
 fig_shn_trt <- ggboxplot(richness2, x = "Treatment_Group", y = "Shannon", color = "Treatment_Group", fill = "Treatment_Group", alpha = 0.5)+
   theme_bw() +
   geom_jitter(aes(color = Treatment_Group), position = position_jitter(0.2),  size = 1.2) +
   labs(x = "Treatment", y = "Shannon diversity")+
-  scale_color_manual(name = "Treatment", values = c("#797979","#F16400", "#531B92"))+ #dot color
-  scale_fill_manual(name = "Treatment", values = c("#797979","#F16400", "#531B92"))+ #fill color
+  scale_color_manual(name = "Treatment", values = c("#797979","#F16400", "#531B92"))+ # dot color
+  scale_fill_manual(name = "Treatment", values = c("#797979","#F16400", "#531B92"))+ # fill color
   theme(axis.text.x = element_text(size = 12, angle = 0, vjust = 0.5, hjust = 0.5),
         axis.text.y = element_text(size = 12, angle = 0, vjust = 0.5, hjust = 0.5),
         axis.title = element_text(size = 16, face = "bold"),
@@ -108,7 +146,8 @@ fig_shn_trt
 
 # SLIDES ####
 
-# Beta diversity ####
+
+# Beta diversity #### ----------------------------------------------------------
 # Save sample data from ps. 
 sdf <- as(sample_data(ps), "data.frame")
 sdf$Treatment_Group <- factor(sdf$Treatment_Group, levels = c("Control", "Abx", "Abx+C.albicans")) # order categories 
@@ -169,7 +208,7 @@ permanova_treatment
 
 #SLIDES ####
 
-# Relative Abundance ####
+# Relative Abundance #### ------------------------------------------------------
 # Prepare the taxa table for plotting. 
 taxa <- data.frame(tax_table(ps)) # extract taxa table as a data frame
 taxa2 <- taxa %>%
@@ -222,7 +261,7 @@ fig_genus_top10
 
 # Activity 3: Plot relative abundance for the treatment groups at species level (hint - use the Species_fullname column).
 
-# Differential abundance with DESeq ####
+# Differential abundance with DESeq #### ---------------------------------------
 # Let's look at taxa that are differentially abundant in Control vs Abx
 ps_filt <- ps %>%
   subset_samples(Treatment_Group == "Control" | Treatment_Group == "Abx")
