@@ -44,13 +44,16 @@ setwd("~/Documents/Postdoc/Argentina Workshop")
 
 
 # Load and clean data #### -----------------------------------------------------
+# If you need to clean your environment:
+# rm(list = ls(all = TRUE)) 
+
 load("antibio_dada2.RData") # loads both the taxonomy and ASV tables that were generated in the DADA2 session
 
 # Taxonomy table
 head(taxa); class(taxa) # needs to be in a matrix format
 
 # ASV table
-head(seqtab.nochim); class(seqtab.nochim) # can be in a matrix or dataframe format
+head(seqtab.nochim); class(seqtab.nochim) # needs to be in a matrix format
 
 View(taxa)
 View(seqtab.nochim)
@@ -97,11 +100,17 @@ taxa_names(ps) # names of each of the ASVs
 ?prune_taxa # for filtering out unwanted ASVs in phyloseq object
 ?prune_samples # for filtering out unwanted samples in phyloseq object
 ?filter_taxa # filter ASVs based on across-sample abundance with a specified function
-?subset_samples # subset ASVs based on the provided conditions
+?subset_taxa # subset ASVs based on the provided conditions
 ?subset_samples # subset samples based on the provided conditions
 ?tax_glom # merges ASVs at the indicated taxonomy level
 ?transform_sample_counts # transform ASV abundance counts in each sample with a function of choice
 ?psmelt # melt the phyloseq object to a dataframe 
+
+# There are also example datasets already within phyloseq if you want to practice
+# any of these functions on a different dataset. For example:
+# data(GlobalPatterns)
+# data(enterotype)
+# data(esophagus)
 
 # Take a look at the top section of each phyloseq component:
 head(otu_table(ps)) # for both constructing and accessing the table ASV abundance 
@@ -226,10 +235,16 @@ max(sample_sums(ps2)) # maximum number of sequencing reads per sample
 min(sample_sums(ps2)) # minimum number of sequencing reads per sample
 
 # Now, let's look at the rarefaction curves
-ggrare(ps2, step=100, se=FALSE, color="Sample_ID") 
+rareCurve <- ggrare(ps2, step=100, se=FALSE, color="Sample_ID") 
 # You can adjust the step depending on how deep your sequencing is. For example, if you have
-# millions of reads per sample, you can increase the step; otherwise, it will take a long time
+# millions of reads per sample, you can increase the "step"; otherwise, it will take a long time
 # to generate the rarefaction curves. 
+
+# If you want to zoom into a section of the rarefaction curve, you can also add 
+# x-axis limits:
+# For example, if we just want to look up until a maximum of 10,000 reads on the plot:
+rareCurve +
+  coord_cartesian(expand=FALSE, x=c(0,10000))
 
 # In this case, as we increase the sample size (x-axis), we don't get any more new ASVs 
 # (species richness; y-axis) after ~10,000 reads, with the exception of one sample.
@@ -237,12 +252,12 @@ ggrare(ps2, step=100, se=FALSE, color="Sample_ID")
 # let's keep all of our samples. However, if we had samples with sequencing depths below
 # the plateau point, we may want to omit those samples. 
 
-# For example:
+# For example (to omit samples below a threshold):
 # ps_filtered <- subset_samples(ps2, depth >= x) # with x being your plateau point
 
 # Some researchers may also want to rarefy their data which can be done using the following code:
 # ps_rarefied <- rarefy_even_depth(ps2, rngseed = 1923, sample.size = x) 
-# with x being your plateau cutoff point, and rngseed being a random number (any number will do!)
+# with x being your plateau cutoff point, and rngseed being a random number (any big number will do!)
 
 
 # 5. Finalize our cleaned phyloseq object
@@ -257,6 +272,7 @@ saveRDS(ps_clean,"ps.rds")
 
 
 # Explore the denoised and decontaminated phyloseq object #### -----------------
+
 # We can now calculate the new sequencing depth and compare this to the original to determine the reads lost from filtering. 
 ps_clean@sam_data$depth_filt <- sample_sums(ps_clean) # save number of ASVs per sample after filtering to new column
 metadata_clean <- data.frame(sample_data(ps_clean)) # save sample dataframe with new and old sequencing depth columns to perform stats below
